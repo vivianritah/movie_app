@@ -10,26 +10,34 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Movies App'),
       ),
-      body: FutureBuilder<Movie?>(
-        future: MovieService().fetchLatestMovie(),
+      body: FutureBuilder<List<Movie>>(
+        future: MovieService().fetchPopularMovies(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('No latest movie found'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No movies found'));
           }
-          
-          final movie = snapshot.data!;
-          return ListTile(
-            leading: movie.posterPath != null
-                ? Image.network('https://image.tmdb.org/t/p/w200${movie.posterPath}')
-                : Icon(Icons.movie),
-            title: Text(movie.title),
-            subtitle: Text('Rating: ${movie.voteAverage?.toStringAsFixed(1) ?? 'N/A'}'),
-            onTap: () {
-              // Navigate to movie details
+
+          final movies = snapshot.data!;
+          return ListView.builder(
+            itemCount: movies.length,
+            itemBuilder: (context, index) {
+              final movie = movies[index];
+              return ListTile(
+                leading: movie.posterPath != null
+                    ? Image.network(
+                        'https://image.tmdb.org/t/p/w200${movie.posterPath}')
+                    : Icon(Icons.movie),
+                title: Text(movie.title),
+                subtitle: Text(
+                    'Rating: ${movie.voteAverage?.toStringAsFixed(1) ?? 'N/A'}'),
+                onTap: () {
+                  // Navigate to movie details
+                },
+              );
             },
           );
         },
